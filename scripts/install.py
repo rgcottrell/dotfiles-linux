@@ -47,7 +47,11 @@ def deploy(home, dry_run):
     if not config.is_absolute() or not state.is_absolute():
         raise RuntimeError('XDG paths must be absolute')
     mappings = []
-    for source_root, target_root in [(REPO / 'config', config), (REPO / 'bin', home / '.local/bin')]:
+    for source_root, target_root in [
+        (REPO / 'home', home),
+        (REPO / 'config', config),
+        (REPO / 'bin', home / '.local/bin'),
+    ]:
         sources = source_root.glob('*') if source_root.name == 'bin' else source_root.rglob('*')
         for src in sorted(sources):
             if src.is_file():

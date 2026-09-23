@@ -58,6 +58,27 @@ class InstallerTests(unittest.TestCase):
         installer.restore(self.journals()[0])
         self.assertEqual(self.dest.read_text(), 'original')
 
+    def test_home_dotfiles_repeat_and_restore_with_xdg_paths(self):
+        (self.repo / 'home').mkdir()
+        source = self.repo / 'home/.bashrc'
+        source.write_text('managed shell config')
+        dest = self.home / '.bashrc'
+        dest.write_text('original shell config')
+        history = self.home / '.bash_history'
+        history.write_text('local history')
+        installer.deploy(self.home, True)
+        self.assertEqual(dest.read_text(), 'original shell config')
+        installer.deploy(self.home, False)
+        self.assertTrue(dest.is_symlink())
+        self.assertEqual(dest.resolve(), source)
+        self.assertFalse((self.config / '.bashrc').exists())
+        installer.deploy(self.home, False)
+        self.assertEqual(len(self.journals()), 1)
+        installer.restore(self.journals()[0])
+        self.assertFalse(dest.is_symlink())
+        self.assertEqual(dest.read_text(), 'original shell config')
+        self.assertEqual(history.read_text(), 'local history')
+
     def test_restore_preserves_independent_changes(self):
         installer.deploy(self.home, False)
         self.dest.unlink()

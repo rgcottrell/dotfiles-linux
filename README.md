@@ -105,7 +105,8 @@ Super+Alt+L uses swaylock; DMS's own lock button uses its own lock screen.
 
 ### Shared configuration
 
-All shared configuration lives in `config/`; helper commands live in `bin/`.
+XDG configuration lives in `config/`, home-directory dotfiles in `home/`, and
+helper commands in `bin/`.
 Mocha colours are explicitly recorded in the configs, and Ghostty uses its bundled
 Catppuccin Mocha theme. GTK/Qt applications keep their own themes; the repo does
 not install third-party application theme patches.
@@ -116,6 +117,20 @@ and never managed by the installer. Use `niri msg outputs` to identify displays.
 The local include uses the standard `~/.config` path; if using `XDG_CONFIG_HOME`,
 adjust that include accordingly. The installer otherwise respects XDG config and
 state paths. Add shared changes to Git; keep machine-specific settings local.
+
+### Command-line shells
+
+The installer also manages Bash (`.bashrc`, `.bash_profile`, `.bash_logout`),
+Zsh (`.zshrc`, `.zshenv`), `.profile`, and Fish (`config.fish` and
+`conf.d/rustup.fish`). These preserve the existing shell setup, including the
+CachyOS Zsh/Fish configuration, Rust environment hooks and Fish SSH agent socket.
+The `.profile` PATH entry uses `$HOME/.local/bin` so it works for other users.
+The CachyOS shell configuration packages and Rust environment files must already
+be present; the installer does not install shells or change the login shell.
+
+Fish's generated `fish_variables`, shell history and other runtime state are not
+tracked. Shell files use the same backup and rollback mechanism as desktop files.
+Open a new shell after installation to load the managed configuration.
 
 ## Validate and restore
 
