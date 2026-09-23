@@ -67,7 +67,12 @@ try:
                     output.write('\n')
             except FileExistsError:
                 pass
-        shell = subprocess.Popen(['dms', 'run'], start_new_session=True)
+        shell_env = os.environ.copy()
+        # Hide redundant tray applets while retaining other application icons.
+        hidden_tray_ids = shell_env.get('DMS_HIDE_TRAYIDS', '').split(',')
+        hidden_tray_ids.extend(['Cachy-Update', 'nm-applet'])
+        shell_env['DMS_HIDE_TRAYIDS'] = ','.join(filter(None, hidden_tray_ids))
+        shell = subprocess.Popen(['dms', 'run'], start_new_session=True, env=shell_env)
         children.append(shell)
     else:
         print('DMS is not installed; install dms-shell to start the desktop shell.', file=sys.stderr)

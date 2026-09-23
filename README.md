@@ -76,6 +76,7 @@ started on demand by Niri. The GTK file chooser portal avoids requiring Nautilus
 
 The supervisor starts DankMaterialShell as the desktop shell. DMS provides the
 bar, wallpaper, notifications, launcher, network/audio controls and polkit dialogs.
+The Cachy-Update and NetworkManager tray icons are hidden; use DMS's network controls.
 There is no alternative shell fallback: if DMS is missing or exits, the supervisor
 logs the problem and keeps idle locking active. Launcher and menu bindings call
 DMS directly. After resolving a shell failure, log out and back into Niri.
