@@ -4,6 +4,7 @@ dms-shell
 quickshell
 ghostty
 tmux
+starship
 swayidle
 swaylock
 xwayland-satellite

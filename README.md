@@ -134,6 +134,14 @@ Fish's generated `fish_variables`, shell history and other runtime state are not
 tracked. Shell files use the same backup and rollback mechanism as desktop files.
 Open a new shell after installation to load the managed configuration.
 
+Fish uses Starship with the Catppuccin Mocha powerline prompt from
+[the macOS dotfiles](https://github.com/rgcottrell/dotfiles-macos/blob/8f2efe6734d07e2537964da59d1c27de118919a4/starship/.config/starship.toml),
+with the clock segment removed. It shows the OS/user, directory, Git status and
+applicable language/container information above a separate input line.
+Starship is included in `packages.txt`; its initialization replaces the CachyOS
+Pure prompt and newline hook in interactive Fish shells. Customize the shared
+`config/starship.toml`; Ghostty's configured Nerd Font supplies its icons.
+
 ### Terminal multiplexers
 
 Tmux is included in `packages.txt`. Herdr is installed separately from its
