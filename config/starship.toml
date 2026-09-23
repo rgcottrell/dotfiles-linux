@@ -61,6 +61,7 @@ disabled = false
 style = "bg:surface0 fg:text"
 
 [os.symbols]
+CachyOS = ""
 Windows = "󰍲"
 Ubuntu = "󰕈"
 SUSE = ""
