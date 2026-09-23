@@ -37,18 +37,14 @@ window-rule {
     geometry-corner-radius 10
     clip-to-geometry true
 }
-window-rule {
-    match app-id=r#"^(org.pulseaudio.pavucontrol|nm-connection-editor)$"#
-    open-floating true
-}
 // This supervisor owns desktop helpers only for the lifetime of this session.
 spawn-sh-at-startup "exec \"$HOME/.local/bin/niri-desktop-session\""
 screenshot-path "~/Pictures/Screenshots/%Y-%m-%d_%H-%M-%S.png"
 binds {
     Mod+Return hotkey-overlay-title="Terminal" { spawn "ghostty"; }
     Mod+T { spawn "ghostty"; }
-    Mod+D hotkey-overlay-title="Applications" { spawn "fuzzel"; }
-    Mod+Space hotkey-overlay-title="Desktop menu" { spawn-sh "exec \"$HOME/.local/bin/desktop-menu\""; }
+    Mod+D hotkey-overlay-title="Applications" { spawn-sh "exec \"$HOME/.local/bin/desktop-launcher\""; }
+    Mod+Space hotkey-overlay-title="DMS control centre" { spawn-sh "exec \"$HOME/.local/bin/desktop-menu\""; }
     Mod+B hotkey-overlay-title="Default browser" { spawn "xdg-open" "https://start.duckduckgo.com"; }
     Mod+E hotkey-overlay-title="Files" { spawn-sh "xdg-open \"$HOME\""; }
     Mod+O { show-hotkey-overlay; }

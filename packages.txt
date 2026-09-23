@@ -1,23 +1,18 @@
 # Repository packages only; CachyOS retains its configured repository priority.
 niri
+dms-shell
+quickshell
 ghostty
-waybar
-fuzzel
-mako
-swaybg
 swayidle
 swaylock
 xwayland-satellite
 xdg-desktop-portal-gtk
 xdg-desktop-portal-gnome
 gnome-keyring
-polkit-gnome
 wl-clipboard
 brightnessctl
 playerctl
 libnotify
-pavucontrol
-network-manager-applet
 ttf-jetbrains-mono-nerd
 pipewire
 pipewire-pulse

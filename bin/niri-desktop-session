@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """Run desktop helpers, and stop them when Niri's IPC connection closes."""
 import fcntl
+import json
 import os
 from pathlib import Path
 import signal
+import shutil
 import subprocess
+import sys
 import time
 
 runtime = Path(os.environ['XDG_RUNTIME_DIR'])
@@ -12,14 +15,11 @@ lock = (runtime / 'niri-dotfiles-session.lock').open('w')
 try:
     fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
 except BlockingIOError:
+    lock.close()
     raise SystemExit(0)
 
+config = Path(os.environ.get('XDG_CONFIG_HOME', str(Path.home() / '.config')))
 commands = [
-    ['waybar'],
-    ['mako'],
-    ['swaybg', '-c', '#1e1e2e'],
-    ['/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1'],
-    ['nm-applet', '--indicator'],
     ['swayidle', '-w', 'timeout', '300', 'swaylock -f',
      'timeout', '600', 'niri msg action power-off-monitors',
      'resume', 'niri msg action power-on-monitors',
@@ -36,16 +36,59 @@ def stop(*_):
 
 signal.signal(signal.SIGTERM, stop)
 signal.signal(signal.SIGINT, stop)
+shell = None
 try:
     monitor = subprocess.Popen(['niri', 'msg', 'event-stream'], stdout=subprocess.DEVNULL)
     children.append(monitor)
     for command in commands:
         children.append(subprocess.Popen(command))
+    if shutil.which('dms'):
+        # DMS owns this mutable file; seed once, never symlink it into Git.
+        settings = config / 'DankMaterialShell/settings.json'
+        settings.parent.mkdir(parents=True, exist_ok=True)
+        if not settings.exists():
+            defaults = {
+                'currentThemeName': 'custom',
+                'customThemeFile': str(config / 'DankMaterialShell/themes/mocha.json'),
+                'clockFormat': '24h',
+                'runDmsMatugenTemplates': False,
+                'runUserMatugenTemplates': False,
+                'syncModeWithPortal': False,
+                'loginctlLockIntegration': False,
+                'lockBeforeSuspend': False,
+                'acLockTimeout': 0, 'acMonitorTimeout': 0, 'acSuspendTimeout': 0,
+                'batteryLockTimeout': 0, 'batteryMonitorTimeout': 0, 'batterySuspendTimeout': 0,
+                'wallpaperBackgroundColorMode': 'custom',
+                'wallpaperBackgroundCustomColor': '#1e1e2e',
+            }
+            try:
+                with settings.open('x') as output:
+                    json.dump(defaults, output, indent=2)
+                    output.write('\n')
+            except FileExistsError:
+                pass
+        shell = subprocess.Popen(['dms', 'run'], start_new_session=True)
+        children.append(shell)
+    else:
+        print('DMS is not installed; install dms-shell to start the desktop shell.', file=sys.stderr)
     while not stopping and monitor.poll() is None:
+        if shell is not None and shell.poll() is not None:
+            # Keep idle locking active even if the desktop shell exits.
+            print(f'DMS exited with status {shell.returncode}.', file=sys.stderr)
+            try:
+                os.killpg(shell.pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+            shell = None
         for child in children:
             child.poll()  # Reap exited children.
         time.sleep(1)
 finally:
+    if shell is not None:
+        try:
+            os.killpg(shell.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
     for child in children:
         if child.poll() is None:
             child.terminate()
@@ -55,3 +98,9 @@ finally:
         except subprocess.TimeoutExpired:
             child.kill()
             child.wait()
+    if shell is not None:
+        try:
+            os.killpg(shell.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+    lock.close()

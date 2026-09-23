@@ -1,8 +1,9 @@
 # CachyOS + Niri dotfiles
 
 A keyboard-first, Catppuccin Mocha desktop with a mauve accent. Inspired by
-Omarchy's cohesive presentation, using small, independently configurable tools:
-Niri, Waybar, Fuzzel, Ghostty, Mako and swaylock. The background is a quiet Mocha
+Omarchy's cohesive presentation, using Niri, DankMaterialShell (Quickshell),
+Ghostty and swaylock.
+The background is a quiet Mocha
 base colour. Existing browser, file manager, shell, KDE session and CachyOS
 repositories remain available.
 
@@ -46,7 +47,7 @@ them into another dotfiles repository.
 | --- | --- |
 | Super+Return / Super+T | Ghostty |
 | Super+D | App launcher |
-| Super+Space | Desktop menu |
+| Super+Space | DMS control centre |
 | Super+B / Super+E | Default browser / file manager |
 | Super+H/J/K/L or arrows | Focus windows |
 | Super+Ctrl+H/J/K/L | Move windows/columns |
@@ -70,6 +71,38 @@ so they do not intentionally persist into another desktop session. Xwayland is
 started on demand by Niri. The GTK file chooser portal avoids requiring Nautilus.
 
 ## Customize
+
+### DankMaterialShell desktop
+
+The supervisor starts DankMaterialShell as the desktop shell. DMS provides the
+bar, wallpaper, notifications, launcher, network/audio controls and polkit dialogs.
+There is no alternative shell fallback: if DMS is missing or exits, the supervisor
+logs the problem and keeps idle locking active. Launcher and menu bindings call
+DMS directly. After resolving a shell failure, log out and back into Niri.
+
+To install the new dependencies on an existing setup:
+
+```sh
+sudo pacman -Syu --needed dms-shell quickshell
+~/.dotfiles/install
+```
+
+Then log out and back into Niri. Do not run `dms setup` or enable its global
+systemd service: this repository already owns Niri configuration and starts DMS
+only for the Niri session. Super+D opens the launcher; Super+Space opens the
+control centre, which provides access to settings. Super+O still shows shortcuts.
+
+On first launch, the supervisor creates a regular, editable
+`~/.config/DankMaterialShell/settings.json` with the bundled Mocha theme and
+application theme generation disabled. Existing DMS settings are preserved.
+Change shell preferences in DMS; they are not symlinked into this repository.
+The shared theme lives in `config/DankMaterialShell/themes/mocha.json`.
+
+Swayidle and swaylock own automatic locking and sleep
+locking. Keep DMS's idle timeouts disabled to avoid competing idle handlers.
+Super+Alt+L uses swaylock; DMS's own lock button uses its own lock screen.
+
+### Shared configuration
 
 All shared configuration lives in `config/`; helper commands live in `bin/`.
 Mocha colours are explicitly recorded in the configs, and Ghostty uses its bundled
@@ -110,3 +143,5 @@ also retain a filesystem snapshot and package cache. Inspect actual versions wit
 - [Niri config includes](https://niri-wm.github.io/niri/Configuration:-Include.html)
 - [Catppuccin palette](https://catppuccin.com/palette/)
 - [Omarchy](https://omarchy.org/)
+- [DankMaterialShell installation](https://danklinux.com/docs/dankmaterialshell/installation)
+- [DMS custom themes](https://danklinux.com/docs/dankmaterialshell/custom-themes)
