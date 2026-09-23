@@ -59,7 +59,7 @@ them into another dotfiles repository.
 | Super+V / Super+W | Float / tabbed column |
 | Super+[ / Super+] | Stack/unstack windows |
 | Super+Q | Close window |
-| Super+Shift+/ | Shortcut overlay |
+| Super+O | Shortcut overlay |
 | Super+Alt+L | Lock |
 | Print / Alt+Print / Ctrl+Print | Region / window / screen capture |
 | Super+Shift+E | Logout confirmation |

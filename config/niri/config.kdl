@@ -51,7 +51,7 @@ binds {
     Mod+Space hotkey-overlay-title="Desktop menu" { spawn-sh "exec \"$HOME/.local/bin/desktop-menu\""; }
     Mod+B hotkey-overlay-title="Default browser" { spawn "xdg-open" "https://start.duckduckgo.com"; }
     Mod+E hotkey-overlay-title="Files" { spawn-sh "xdg-open \"$HOME\""; }
-    Mod+Shift+Slash { show-hotkey-overlay; }
+    Mod+O { show-hotkey-overlay; }
     Mod+Q { close-window; }
     Mod+H { focus-column-left; }
     Mod+J { focus-window-down; }
