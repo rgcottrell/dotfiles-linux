@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+choice=$(printf '%s\n' 'Applications' 'Terminal' 'Files' 'Audio' 'Network' 'Keybindings' 'Lock' 'Suspend' 'Log out' 'Reboot' 'Power off' | fuzzel --dmenu --prompt='Desktop ❯ ') || exit 0
+confirm() {
+    local answer
+    answer=$(printf '%s\n' 'Cancel' "$1" | fuzzel --dmenu --prompt='Confirm ❯ ') || return 1
+    [[ $answer == "$1" ]]
+}
+case "$choice" in
+    Applications) exec fuzzel ;;
+    Terminal) exec ghostty ;;
+    Files) exec xdg-open "$HOME" ;;
+    Audio) exec pavucontrol ;;
+    Network) exec nm-connection-editor ;;
+    Keybindings) exec niri msg action show-hotkey-overlay ;;
+    Lock) exec swaylock -f ;;
+    Suspend) swaylock -f && systemctl suspend ;;
+    'Log out') exec niri msg action quit ;;
+    Reboot) confirm Reboot && systemctl reboot ;;
+    'Power off') confirm 'Power off' && systemctl poweroff ;;
+esac

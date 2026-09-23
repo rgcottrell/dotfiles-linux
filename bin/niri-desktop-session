@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+"""Run desktop helpers, and stop them when Niri's IPC connection closes."""
+import fcntl
+import os
+from pathlib import Path
+import signal
+import subprocess
+import time
+
+runtime = Path(os.environ['XDG_RUNTIME_DIR'])
+lock = (runtime / 'niri-dotfiles-session.lock').open('w')
+try:
+    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+except BlockingIOError:
+    raise SystemExit(0)
+
+commands = [
+    ['waybar'],
+    ['mako'],
+    ['swaybg', '-c', '#1e1e2e'],
+    ['/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1'],
+    ['nm-applet', '--indicator'],
+    ['swayidle', '-w', 'timeout', '300', 'swaylock -f',
+     'timeout', '600', 'niri msg action power-off-monitors',
+     'resume', 'niri msg action power-on-monitors',
+     'before-sleep', 'swaylock -f'],
+]
+children = []
+stopping = False
+
+
+def stop(*_):
+    global stopping
+    stopping = True
+
+
+signal.signal(signal.SIGTERM, stop)
+signal.signal(signal.SIGINT, stop)
+try:
+    monitor = subprocess.Popen(['niri', 'msg', 'event-stream'], stdout=subprocess.DEVNULL)
+    children.append(monitor)
+    for command in commands:
+        children.append(subprocess.Popen(command))
+    while not stopping and monitor.poll() is None:
+        for child in children:
+            child.poll()  # Reap exited children.
+        time.sleep(1)
+finally:
+    for child in children:
+        if child.poll() is None:
+            child.terminate()
+    for child in children:
+        try:
+            child.wait(timeout=3)
+        except subprocess.TimeoutExpired:
+            child.kill()
+            child.wait()

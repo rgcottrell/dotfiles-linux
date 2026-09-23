@@ -1,0 +1,5 @@
+// Copy to ~/.config/niri/local.kdl; this file is never installed or overwritten.
+// Discover outputs: niri msg outputs
+// output "eDP-1" { scale 1.5; }
+// input { keyboard { xkb { layout "us"; }; }; }
+// binds { Mod+Return { spawn "alacritty"; }; }
