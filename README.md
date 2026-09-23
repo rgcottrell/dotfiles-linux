@@ -46,6 +46,8 @@ them into another dotfiles repository.
 | Shortcut | Action |
 | --- | --- |
 | Super+Return / Super+T | Ghostty |
+| Super+Alt+Return | Tmux in Ghostty (attach or create `Work`) |
+| Super+Ctrl+Return | Herdr in Ghostty |
 | Super+D | App launcher |
 | Super+Space | DMS control centre |
 | Super+B / Super+E | Default browser / file manager |
@@ -131,6 +133,34 @@ be present; the installer does not install shells or change the login shell.
 Fish's generated `fish_variables`, shell history and other runtime state are not
 tracked. Shell files use the same backup and rollback mechanism as desktop files.
 Open a new shell after installation to load the managed configuration.
+
+### Terminal multiplexers
+
+Tmux is included in `packages.txt`. Herdr is installed separately from its
+official GitHub release because it is not in the configured Arch/CachyOS repos:
+
+```sh
+./scripts/install-herdr
+./install
+```
+
+The Herdr installer requires `curl` and pins v0.9.1 with SHA-256 verification,
+installing to `~/.local/bin/herdr` on Linux x86_64 or aarch64. File rollback
+restores configuration only; it does not remove this binary.
+
+Both configurations are adapted from
+[Omarchy](https://github.com/omacom/omarchy/tree/28ceaae70ebac3a0edcc21f2faa77a90dc6d404c/config),
+with its keybindings and terminal-palette theme. Tmux's help binding uses its
+built-in key list instead of the Omarchy menu helper. Launching tmux attaches to
+an existing session or creates `Work`; Herdr launches or attaches to its persistent
+session. The desktop shortcuts above use Ghostty under Niri.
+
+Both use **Ctrl+Space** as the prefix (tmux also accepts Ctrl+B). After the prefix:
+`v` splits beside, `h` splits below, `c` creates a window/tab, `z` zooms a pane,
+`d` detaches, `q` reloads configuration, and `?` shows help. Alt+1…9 switches
+windows/tabs, Ctrl+Alt+arrows focuses panes, and Ctrl+Alt+Shift+arrows resizes them.
+Herdr follows Omarchy's `confirm_close = false`, so closing panes or workspaces
+does not prompt for confirmation.
 
 ## Validate and restore
 

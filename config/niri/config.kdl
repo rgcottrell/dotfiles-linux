@@ -42,6 +42,8 @@ spawn-sh-at-startup "exec \"$HOME/.local/bin/niri-desktop-session\""
 screenshot-path "~/Pictures/Screenshots/%Y-%m-%d_%H-%M-%S.png"
 binds {
     Mod+Return hotkey-overlay-title="Terminal" { spawn "ghostty"; }
+    Mod+Alt+Return hotkey-overlay-title="Tmux terminal" { spawn "ghostty" "-e" "bash" "-c" "tmux attach || exec tmux new -s Work"; }
+    Mod+Ctrl+Return hotkey-overlay-title="Herdr agent manager" { spawn-sh "exec ghostty -e \"$HOME/.local/bin/herdr\""; }
     Mod+T { spawn "ghostty"; }
     Mod+D hotkey-overlay-title="Applications" { spawn-sh "exec \"$HOME/.local/bin/desktop-launcher\""; }
     Mod+Space hotkey-overlay-title="DMS control centre" { spawn-sh "exec \"$HOME/.local/bin/desktop-menu\""; }

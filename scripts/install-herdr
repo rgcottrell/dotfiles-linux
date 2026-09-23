@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Install a pinned official release without requiring a system package repository.
+set -euo pipefail
+version=v0.9.1
+case "$(uname -sm)" in
+  'Linux x86_64')
+    asset=herdr-linux-x86_64
+    checksum=2a02fed16beb651ef006e1d43f048f652ca4dc58ad053cd2d44450563d5c54b7 ;;
+  'Linux aarch64')
+    asset=herdr-linux-aarch64
+    checksum=f4ccf4de745f2cb9a39a983e9ba3703dad50ec2a58dea83026ceab721bbd8d9e ;;
+  *) echo 'Supported platforms: Linux x86_64 and aarch64.' >&2; exit 1 ;;
+esac
+download=$(mktemp)
+trap 'rm -f "$download"' EXIT
+curl --fail --location --show-error --silent \
+  "https://github.com/herdrdev/herdr/releases/download/$version/$asset" -o "$download"
+printf '%s  %s\n' "$checksum" "$download" | sha256sum --check --status
+install -Dm755 "$download" "$HOME/.local/bin/herdr"
+printf 'Installed Herdr %s to %s/.local/bin/herdr\n' "$version" "$HOME"

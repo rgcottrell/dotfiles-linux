@@ -3,6 +3,7 @@ niri
 dms-shell
 quickshell
 ghostty
+tmux
 swayidle
 swaylock
 xwayland-satellite
