@@ -48,6 +48,7 @@ them into another dotfiles repository.
 | Super+Return / Super+T | Ghostty |
 | Super+Alt+Return | Tmux in Ghostty (attach or create `Work`) |
 | Super+Ctrl+Return | Herdr in Ghostty |
+| Super+D | Search applications |
 | Super+Space | Window overview |
 | Super+B / Super+E | Default browser / file manager |
 | Super+H/J/K/L or arrows | Focus windows |
@@ -84,8 +85,9 @@ clock, and compact status controls on the right. All of our shell code is in
 - `Theme.qml`: shared Mocha colors, font and bar height.
 - `NiriState.qml`: a single Niri event stream shared by the bars, with reconnect.
 - `Bar.qml` and `BarButton.qml`: workspace buttons, clock, volume, battery and lock.
+- `Launcher.qml` and `AppSearch.js`: application search and keyboard navigation.
 
-Click a workspace to focus it, click the CachyOS logo for the window overview,
+Click a workspace to focus it, click the CachyOS logo for the application launcher,
 click volume to mute, or scroll over it to adjust volume. The battery appears
 only when present. The clock hides on narrow outputs before overlapping controls.
 Quickshell reloads QML edits automatically. Inspect its state with:
@@ -99,13 +101,19 @@ The session supervisor normally launches Quickshell for you. If it exits,
 idle locking continues; the first command above starts the bar again for debugging.
 Do not start an extra copy when one is already running.
 
-This first version deliberately has no app launcher, notification server,
-notification history, system tray or control centre. Super+Return opens a terminal,
+Super+D toggles the launcher on the focused monitor. Search by app name,
+description or keywords; name matches rank first. Up/Down or Tab/Shift+Tab selects,
+Enter launches, and Escape or a click outside closes it. Click a result to launch
+it directly. Terminal applications open in Ghostty. The installed desktop-entry
+catalog refreshes as applications are added or removed; hidden entries stay hidden.
+Search text is cleared each time the launcher opens, and no usage history is stored.
+
+There is no notification server, notification history, system tray or control
+centre yet. Super+Return opens a terminal,
 Super+B the browser, Super+E the file manager, and Super+Space/Super+Tab the Niri
-window overview. Super+O lists shortcuts. Launch other apps from the terminal;
+window overview. Super+O lists shortcuts;
 `nmtui` handles network setup and `pavucontrol` offers detailed audio controls
-when installed. A native launcher and notifications can be added as separate
-Quickshell components later.
+when installed. Notifications can be added as a separate Quickshell component later.
 
 Swayidle/swaylock own idle and sleep locking. The session also starts the KDE
 polkit agent for authentication dialogs. None of these helpers is a global user
@@ -188,6 +196,7 @@ does not prompt for confirmation.
 ```sh
 niri validate -c config/niri/config.kdl
 python3 -m unittest discover -s tests -v
+QT_QPA_PLATFORM=offscreen /usr/lib/qt6/bin/qmltestrunner -input tests/qml
 ./install --dry-run
 ./install --restore ~/.local/state/niri-dotfiles/backups/TRANSACTION/manifest.json
 ```

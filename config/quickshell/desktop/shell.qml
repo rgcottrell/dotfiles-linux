@@ -9,6 +9,7 @@ ShellRoot {
     Theme { id: desktopTheme }
     NiriState { id: workspaceState }
     SystemClock { id: wallClock; precision: SystemClock.Minutes }
+    Launcher { id: appLauncher; theme: desktopTheme; niri: workspaceState }
 
     Variants {
         model: Quickshell.screens
@@ -24,14 +25,19 @@ ShellRoot {
                 WlrLayershell.namespace: "dotfiles-background"
                 mask: Region {}
             }
-            Bar { screen: output.modelData; theme: desktopTheme; niri: workspaceState; clock: wallClock }
+            Bar {
+                screen: output.modelData; theme: desktopTheme; niri: workspaceState; clock: wallClock
+                onLauncherRequested: appLauncher.toggle(output.modelData)
+            }
         }
     }
 
     IpcHandler {
         target: "desktop"
+        function launcher(): void { appLauncher.toggle(null); }
         function status(): string {
-            return JSON.stringify({ screens: Quickshell.screens.length, workspaces: workspaceState.workspaces });
+            return JSON.stringify({ screens: Quickshell.screens.length, workspaces: workspaceState.workspaces,
+                launcherVisible: appLauncher.visible, applications: appLauncher.applications.length });
         }
     }
 }

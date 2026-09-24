@@ -10,6 +10,7 @@ PanelWindow {
     required property Theme theme
     required property NiriState niri
     required property SystemClock clock
+    signal launcherRequested()
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property var battery: UPower.displayDevice
 
@@ -31,7 +32,7 @@ PanelWindow {
         BarButton {
             theme: bar.theme
             text: ""
-            onClicked: Quickshell.execDetached(["niri", "msg", "action", "toggle-overview"])
+            onClicked: bar.launcherRequested()
         }
         Repeater {
             model: bar.niri.workspaces.filter(w => w.output === bar.screen.name)
