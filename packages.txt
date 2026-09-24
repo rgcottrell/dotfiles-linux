@@ -1,7 +1,7 @@
 # Repository packages only; CachyOS retains its configured repository priority.
 niri
-dms-shell
 quickshell
+polkit-kde-agent
 ghostty
 tmux
 starship

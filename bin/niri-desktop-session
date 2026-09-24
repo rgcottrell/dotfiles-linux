@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Run desktop helpers, and stop them when Niri's IPC connection closes."""
 import fcntl
-import json
 import os
 from pathlib import Path
 import signal
@@ -42,44 +41,23 @@ try:
     children.append(monitor)
     for command in commands:
         children.append(subprocess.Popen(command))
-    if shutil.which('dms'):
-        # DMS owns this mutable file; seed once, never symlink it into Git.
-        settings = config / 'DankMaterialShell/settings.json'
-        settings.parent.mkdir(parents=True, exist_ok=True)
-        if not settings.exists():
-            defaults = {
-                'currentThemeName': 'custom',
-                'customThemeFile': str(config / 'DankMaterialShell/themes/mocha.json'),
-                'clockFormat': '24h',
-                'runDmsMatugenTemplates': False,
-                'runUserMatugenTemplates': False,
-                'syncModeWithPortal': False,
-                'loginctlLockIntegration': False,
-                'lockBeforeSuspend': False,
-                'acLockTimeout': 0, 'acMonitorTimeout': 0, 'acSuspendTimeout': 0,
-                'batteryLockTimeout': 0, 'batteryMonitorTimeout': 0, 'batterySuspendTimeout': 0,
-                'wallpaperBackgroundColorMode': 'custom',
-                'wallpaperBackgroundCustomColor': '#1e1e2e',
-            }
-            try:
-                with settings.open('x') as output:
-                    json.dump(defaults, output, indent=2)
-                    output.write('\n')
-            except FileExistsError:
-                pass
-        shell_env = os.environ.copy()
-        # Hide redundant tray applets while retaining other application icons.
-        hidden_tray_ids = shell_env.get('DMS_HIDE_TRAYIDS', '').split(',')
-        hidden_tray_ids.extend(['Cachy-Update', 'nm-applet'])
-        shell_env['DMS_HIDE_TRAYIDS'] = ','.join(filter(None, hidden_tray_ids))
-        shell = subprocess.Popen(['dms', 'run'], start_new_session=True, env=shell_env)
+    agent = shutil.which('polkit-kde-authentication-agent-1', path='/usr/lib')
+    if agent:
+        children.append(subprocess.Popen([agent]))
+    else:
+        print('Install polkit-kde-agent for authentication dialogs.', file=sys.stderr)
+    if shutil.which('qs'):
+        shell = subprocess.Popen(
+            ['qs', '--path', str(config / 'quickshell/desktop'), '--no-duplicate'],
+            start_new_session=True,
+        )
         children.append(shell)
     else:
-        print('DMS is not installed; install dms-shell to start the desktop shell.', file=sys.stderr)
+        print('Quickshell is not installed; install quickshell for the desktop bar.', file=sys.stderr)
     while not stopping and monitor.poll() is None:
         if shell is not None and shell.poll() is not None:
             # Keep idle locking active even if the desktop shell exits.
-            print(f'DMS exited with status {shell.returncode}.', file=sys.stderr)
+            print(f'Quickshell exited with status {shell.returncode}.', file=sys.stderr)
             try:
                 os.killpg(shell.pid, signal.SIGTERM)
             except ProcessLookupError:

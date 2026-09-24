@@ -27,6 +27,13 @@ def restore(journal):
     conflicts = []
     for record in reversed(records):
         dest, src, backup = (Path(record[k]) for k in ('dest', 'src', 'backup'))
+        if record.get('retired'):
+            if exists(backup):
+                if exists(dest):
+                    conflicts.append(str(dest))
+                else:
+                    backup.rename(dest)
+            continue
         if dest.is_symlink() and os.readlink(dest) == str(src):
             dest.unlink()
         elif exists(dest):
@@ -56,6 +63,15 @@ def deploy(home, dry_run):
         for src in sorted(sources):
             if src.is_file():
                 mappings.append((src, target_root / src.relative_to(source_root)))
+    # Retire only our old symlinks, preserving personal replacements and journaling
+    # the originals so the same rollback command can restore a pre-migration setup.
+    retired = [
+        (REPO / 'bin/desktop-launcher', home / '.local/bin/desktop-launcher'),
+        (REPO / 'bin/desktop-menu', home / '.local/bin/desktop-menu'),
+        (REPO / 'config/DankMaterialShell/themes/mocha.json', config / 'DankMaterialShell/themes/mocha.json'),
+    ]
+    retired = [(s, d) for s, d in retired if d.is_symlink() and os.readlink(d) == str(s)]
+    mappings.extend(retired)
     # Refuse symlinked parent directories: otherwise a backup could modify another repo.
     for _, dest in mappings:
         for parent in dest.parents:
@@ -63,9 +79,13 @@ def deploy(home, dry_run):
                 raise RuntimeError(f'Symlinked parent directory needs manual migration: {parent}')
     # Niri hot reloads: deploy its entrypoint after all supporting files.
     mappings.sort(key=lambda item: item[0] == REPO / 'config/niri/config.kdl')
-    changes = [(s, d) for s, d in mappings if not (d.is_symlink() and os.readlink(d) == str(s))]
+    changes = [(s, d) for s, d in mappings
+               if (s, d) in retired or not (d.is_symlink() and os.readlink(d) == str(s))]
     for src, dest in changes:
-        print(f'{"back up + " if exists(dest) else ""}link {dest} -> {src}')
+        if (src, dest) in retired:
+            print(f'Back up retired link {dest}')
+        else:
+            print(f'{"back up + " if exists(dest) else ""}link {dest} -> {src}')
     if dry_run or not changes:
         print('Dry run; no files changed.' if dry_run else 'Already installed.')
         return
@@ -78,11 +98,13 @@ def deploy(home, dry_run):
         for index, (src, dest) in enumerate(changes):
             dest.parent.mkdir(parents=True, exist_ok=True)
             backup = backup_root / str(index)
-            records.append(dict(src=str(src), dest=str(dest), backup=str(backup), original=exists(dest)))
+            records.append(dict(src=str(src), dest=str(dest), backup=str(backup),
+                                original=exists(dest), retired=(src, dest) in retired))
             save(journal, records)
             if exists(dest):
                 dest.rename(backup)
-            dest.symlink_to(src)
+            if (src, dest) not in retired:
+                dest.symlink_to(src)
     except BaseException:
         restore(journal)
         raise

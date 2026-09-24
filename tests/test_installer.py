@@ -87,6 +87,37 @@ class InstallerTests(unittest.TestCase):
             installer.restore(self.journals()[0])
         self.assertEqual(self.dest.read_text(), 'new personal config')
 
+    def test_retired_links_are_backed_up_and_restore_is_repeatable(self):
+        dest = self.home / '.local/bin/desktop-menu'
+        dest.parent.mkdir(parents=True)
+        source = self.repo / 'bin/desktop-menu'
+        dest.symlink_to(source)
+        installer.deploy(self.home, True)
+        self.assertTrue(dest.is_symlink())
+        installer.deploy(self.home, False)
+        self.assertFalse(os.path.lexists(dest))
+        installer.restore(self.journals()[0])
+        self.assertEqual(os.readlink(dest), str(source))
+        installer.restore(self.journals()[0])
+        self.assertEqual(os.readlink(dest), str(source))
+
+    def test_retirement_preserves_personal_replacements(self):
+        dest = self.home / '.local/bin/desktop-menu'
+        dest.parent.mkdir(parents=True)
+        dest.write_text('personal menu')
+        installer.deploy(self.home, False)
+        self.assertEqual(dest.read_text(), 'personal menu')
+
+    def test_retired_restore_refuses_to_overwrite_new_file(self):
+        dest = self.home / '.local/bin/desktop-menu'
+        dest.parent.mkdir(parents=True)
+        dest.symlink_to(self.repo / 'bin/desktop-menu')
+        installer.deploy(self.home, False)
+        dest.write_text('new menu')
+        with self.assertRaises(RuntimeError):
+            installer.restore(self.journals()[0])
+        self.assertEqual(dest.read_text(), 'new menu')
+
     def test_broken_symlink_preserved(self):
         self.dest.unlink()
         self.dest.symlink_to('missing-original')

@@ -1,7 +1,7 @@
 # CachyOS + Niri dotfiles
 
 A keyboard-first, Catppuccin Mocha desktop with a mauve accent. Inspired by
-Omarchy's cohesive presentation, using Niri, DankMaterialShell (Quickshell),
+Omarchy's cohesive presentation, using Niri, our own small Quickshell bar,
 Ghostty and swaylock.
 The background is a quiet Mocha
 base colour. Existing browser, file manager, shell, KDE session and CachyOS
@@ -48,8 +48,7 @@ them into another dotfiles repository.
 | Super+Return / Super+T | Ghostty |
 | Super+Alt+Return | Tmux in Ghostty (attach or create `Work`) |
 | Super+Ctrl+Return | Herdr in Ghostty |
-| Super+D | App launcher |
-| Super+Space | DMS control centre |
+| Super+Space | Window overview |
 | Super+B / Super+E | Default browser / file manager |
 | Super+H/J/K/L or arrows | Focus windows |
 | Super+Ctrl+H/J/K/L | Move windows/columns |
@@ -74,36 +73,50 @@ started on demand by Niri. The GTK file chooser portal avoids requiring Nautilus
 
 ## Customize
 
-### DankMaterialShell desktop
+### Our Quickshell desktop
 
-The supervisor starts DankMaterialShell as the desktop shell. DMS provides the
-bar, wallpaper, notifications, launcher, network/audio controls and polkit dialogs.
-The Cachy-Update and NetworkManager tray icons are hidden; use DMS's network controls.
-There is no alternative shell fallback: if DMS is missing or exits, the supervisor
-logs the problem and keeps idle locking active. Launcher and menu bindings call
-DMS directly. After resolving a shell failure, log out and back into Niri.
+The desktop starts with a small bar and a solid Mocha background on each monitor.
+Its layout takes inspiration from Omarchy: workspaces on the left, a centered
+clock, and compact status controls on the right. All of our shell code is in
+`config/quickshell/desktop/`:
 
-To install the new dependencies on an existing setup:
+- `shell.qml`: entry point, monitor surfaces and diagnostic IPC.
+- `Theme.qml`: shared Mocha colors, font and bar height.
+- `NiriState.qml`: a single Niri event stream shared by the bars, with reconnect.
+- `Bar.qml` and `BarButton.qml`: workspace buttons, clock, volume, battery and lock.
+
+Click a workspace to focus it, click the CachyOS logo for the window overview,
+click volume to mute, or scroll over it to adjust volume. The battery appears
+only when present. The clock hides on narrow outputs before overlapping controls.
+Quickshell reloads QML edits automatically. Inspect its state with:
 
 ```sh
-sudo pacman -Syu --needed dms-shell quickshell
-~/.dotfiles/install
+qs --path ~/.config/quickshell/desktop
+qs ipc --path ~/.config/quickshell/desktop call desktop status
 ```
 
-Then log out and back into Niri. Do not run `dms setup` or enable its global
-systemd service: this repository already owns Niri configuration and starts DMS
-only for the Niri session. Super+D opens the launcher; Super+Space opens the
-control centre, which provides access to settings. Super+O still shows shortcuts.
+The session supervisor normally launches Quickshell for you. If it exits,
+idle locking continues; the first command above starts the bar again for debugging.
+Do not start an extra copy when one is already running.
 
-On first launch, the supervisor creates a regular, editable
-`~/.config/DankMaterialShell/settings.json` with the bundled Mocha theme and
-application theme generation disabled. Existing DMS settings are preserved.
-Change shell preferences in DMS; they are not symlinked into this repository.
-The shared theme lives in `config/DankMaterialShell/themes/mocha.json`.
+This first version deliberately has no app launcher, notification server,
+notification history, system tray or control centre. Super+Return opens a terminal,
+Super+B the browser, Super+E the file manager, and Super+Space/Super+Tab the Niri
+window overview. Super+O lists shortcuts. Launch other apps from the terminal;
+`nmtui` handles network setup and `pavucontrol` offers detailed audio controls
+when installed. A native launcher and notifications can be added as separate
+Quickshell components later.
 
-Swayidle and swaylock own automatic locking and sleep
-locking. Keep DMS's idle timeouts disabled to avoid competing idle handlers.
-Super+Alt+L uses swaylock; DMS's own lock button uses its own lock screen.
+Swayidle/swaylock own idle and sleep locking. The session also starts the KDE
+polkit agent for authentication dialogs. None of these helpers is a global user
+service; the supervisor stops them when Niri disconnects.
+
+When upgrading from the DMS version, run `./install` and log out and back in.
+The installer retires only its old launcher/menu/theme symlinks, with backups;
+personal replacements and DMS settings remain intact. DMS is no longer a dependency
+or started by the session. If still installed, remove just its package with
+`sudo pacman -R dms-shell` (Quickshell remains required). Ensure any separately
+configured DMS user service is disabled before the next login.
 
 ### Shared configuration
 
@@ -197,5 +210,5 @@ also retain a filesystem snapshot and package cache. Inspect actual versions wit
 - [Niri config includes](https://niri-wm.github.io/niri/Configuration:-Include.html)
 - [Catppuccin palette](https://catppuccin.com/palette/)
 - [Omarchy](https://omarchy.org/)
-- [DankMaterialShell installation](https://danklinux.com/docs/dankmaterialshell/installation)
-- [DMS custom themes](https://danklinux.com/docs/dankmaterialshell/custom-themes)
+- [Quickshell documentation](https://quickshell.org/docs/)
+- [Omarchy shell layout reference](https://github.com/omacom/omarchy/blob/28ceaae70ebac3a0edcc21f2faa77a90dc6d404c/shell/plugins/bar/Bar.qml)
