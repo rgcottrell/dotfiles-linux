@@ -10,6 +10,7 @@ ShellRoot {
     NiriState { id: workspaceState }
     SystemClock { id: wallClock; precision: SystemClock.Minutes }
     Launcher { id: appLauncher; theme: desktopTheme; niri: workspaceState }
+    Notifications { id: notifications; theme: desktopTheme; niri: workspaceState }
 
     Variants {
         model: Quickshell.screens
@@ -37,7 +38,8 @@ ShellRoot {
         function launcher(): void { appLauncher.toggle(null); }
         function status(): string {
             return JSON.stringify({ screens: Quickshell.screens.length, workspaces: workspaceState.workspaces,
-                launcherVisible: appLauncher.visible, applications: appLauncher.applications.length });
+                launcherVisible: appLauncher.visible, applications: appLauncher.applications.length,
+                notifications: notifications.count });
         }
     }
 }

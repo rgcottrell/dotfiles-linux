@@ -86,6 +86,7 @@ clock, and compact status controls on the right. All of our shell code is in
 - `NiriState.qml`: a single Niri event stream shared by the bars, with reconnect.
 - `Bar.qml` and `BarButton.qml`: workspace buttons, clock, volume, battery and lock.
 - `Launcher.qml` and `AppSearch.js`: application search and keyboard navigation.
+- `Notifications.qml` and `NotificationCard.qml`: notification server and popup cards.
 
 Click a workspace to focus it, click the CachyOS logo for the application launcher,
 click volume to mute, or scroll over it to adjust volume. The battery appears
@@ -108,12 +109,27 @@ it directly. Terminal applications open in Ghostty. The installed desktop-entry
 catalog refreshes as applications are added or removed; hidden entries stay hidden.
 Search text is cleared each time the launcher opens, and no usage history is stored.
 
-There is no notification server, notification history, system tray or control
-centre yet. Super+Return opens a terminal,
+There is no notification history, system tray or control centre yet. Super+Return opens a terminal,
 Super+B the browser, Super+E the file manager, and Super+Space/Super+Tab the Niri
 window overview. Super+O lists shortcuts;
 `nmtui` handles network setup and `pavucontrol` offers detailed audio controls
-when installed. Notifications can be added as a separate Quickshell component later.
+when installed.
+
+Notifications appear in a stack of up to three cards at the top right. A new
+stack opens on the focused monitor and stays there until cleared. Additional
+messages wait for a slot. Normal notifications default to five seconds; explicit
+app timeouts are honored, while critical and zero-timeout notifications stay
+until dismissed or closed by their app. Hover pauses expiry and gives a fresh
+interval when you leave. Changes to replacement notification content restart
+its timer. Click a card or its × button to dismiss it; action buttons invoke the
+app's requested action. Notifications do not take keyboard focus.
+
+Bodies are plain text; rich text, images, sounds, history and do-not-disturb are
+left for later. Pending notifications survive QML reloads but not shell exits.
+Only one notification server can own the session bus. Stop any existing Mako or
+Dunst service before using ours (for example `systemctl --user stop mako.service`),
+and leave competing services disabled. Quickshell retries when the old server exits.
+To send a local test: `notify-send "Hello" "Our shell handles notifications now."`.
 
 Swayidle/swaylock own idle and sleep locking. The session also starts the KDE
 polkit agent for authentication dialogs. None of these helpers is a global user
